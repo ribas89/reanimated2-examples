@@ -1,24 +1,37 @@
-import React from 'react';
-import {objToRNStyle, View, Text} from 'react-native-string-style';
-import {StatusBar, SafeAreaView} from 'react-native';
-import barrel from '../assets/barrel.jpg';
+import React, {useEffect, useState} from 'react';
+import {SafeAreaView, StatusBar} from 'react-native';
 import Animated, {
-  useAnimatedScrollHandler,
-  useSharedValue,
-  useAnimatedStyle,
-  interpolate,
   Extrapolate,
+  FadeIn,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
 } from 'react-native-reanimated';
+import {objToRNStyle, Text} from 'react-native-string-style';
+
+import barrel from '../assets/barrel.jpg';
 
 export const ScrollListScreen = () => {
-  const totalItems = 30;
-  const array = Array(totalItems).fill(0);
+  const totalItems = 20;
+  const [items, setItems] = useState([0]);
 
   const scrolled = useSharedValue(0);
   const animScrollHandler = useAnimatedScrollHandler((event: any) => {
     const contentOffset = event.contentOffset.y;
     scrolled.value = contentOffset;
   });
+
+  useEffect(() => {
+    let count = 1;
+    const interval = setInterval(() => {
+      count = count + 1;
+      setItems(Array(count).fill(0));
+      if (count === totalItems) {
+        clearInterval(interval);
+      }
+    }, 180);
+  }, []);
 
   const animHeaderStyle = useAnimatedStyle(() => ({
     height: interpolate(scrolled.value, [0, 570], [258, 64], Extrapolate.CLAMP),
@@ -48,10 +61,10 @@ export const ScrollListScreen = () => {
       <Animated.ScrollView
         contentContainerStyle={styles.scroll}
         onScroll={animScrollHandler}>
-        {array.map((_v, i) => (
-          <View sstyle={`pd-16${i % 2 === 0 ? ' bg-#c1c1c1' : ''}`} key={i}>
+        {items.map((_v, i) => (
+          <Animated.View entering={FadeIn} style={styles.item} key={i}>
             <Text sstyle="c-black">Item number {i + 1}</Text>
-          </View>
+          </Animated.View>
         ))}
       </Animated.ScrollView>
 
@@ -62,7 +75,7 @@ export const ScrollListScreen = () => {
         />
 
         <Animated.Text style={[styles.text, animTextStyle]}>
-          Total items: {totalItems}
+          Total items: {items.length}
         </Animated.Text>
       </Animated.View>
     </SafeAreaView>
@@ -75,4 +88,5 @@ const styles = objToRNStyle({
   scroll: 'pd-t-258 bg-white',
   image: 'h-200 w-200 bd-ra-100',
   text: 'pd-t-8 fs-24 c-white',
+  item: 'pd-16 mg-t-8 bg-#c1c1c1',
 });
